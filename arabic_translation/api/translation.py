@@ -37,6 +37,7 @@ Requirements:
 - Use appropriate business terminology
 - Don't add explanations or notes
 - Return ONLY the translation
+- Don't add quotation marks
 
 Translation:"""
 
