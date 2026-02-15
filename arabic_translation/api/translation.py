@@ -90,5 +90,13 @@ def translate_with_groq_natural(text, target_lang, source_lang, context=None):
 
 
 def get_groq_api_key():
+    """Get Groq API key from Arabic Translation Key doctype (singleton). Falls back to site config if not set in doctype."""
+    try:
+        doc = frappe.get_single("Arabic Translation Key")
+        key = (doc.get("groq_api_key") or "").strip()
+        if key:
+            return key
+    except Exception:
+        pass
     return frappe.conf.get("groq_api_key")
     
