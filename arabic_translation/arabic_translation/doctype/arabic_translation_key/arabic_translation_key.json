@@ -16,14 +16,14 @@
   },
   {
    "fieldname": "groq_api_key",
-   "fieldtype": "Data",
+   "fieldtype": "Password",
    "label": "Groq API Key"
   }
  ],
  "icon": "fa fa-key",
  "issingle": 1,
  "links": [],
- "modified": "2026-02-15 18:44:45.585293",
+ "modified": "2026-02-15 18:58:51.690268",
  "modified_by": "Administrator",
  "module": "Arabic Translation",
  "name": "Arabic Translation Key",
@@ -32,7 +32,7 @@
   {
    "create": 1,
    "read": 1,
-   "role": "System Manager",
+   "role": "Administrator",
    "share": 1,
    "write": 1
   }

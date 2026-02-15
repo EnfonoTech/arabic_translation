@@ -91,12 +91,27 @@ def translate_with_groq_natural(text, target_lang, source_lang, context=None):
 
 def get_groq_api_key():
     """Get Groq API key from Arabic Translation Key doctype (singleton). Falls back to site config if not set in doctype."""
+    key = None
     try:
+        # Use doc.get_password with raise_exception=False so we get None instead of throw when not in __Auth
         doc = frappe.get_single("Arabic Translation Key")
-        key = (doc.get("groq_api_key") or "").strip()
-        if key:
-            return key
+        key = doc.get_password("groq_api_key", raise_exception=False)
     except Exception:
         pass
+    if key and key.strip():
+        return key.strip()
+    # Fallback: read from __Auth in case doc.get_password didn't return it (e.g. cached doc with dummy value)
+    try:
+        from frappe.utils.password import get_decrypted_password
+        key = get_decrypted_password(
+            "Arabic Translation Key",
+            "Arabic Translation Key",
+            "groq_api_key",
+            raise_exception=False,
+        )
+    except Exception:
+        pass
+    if key and key.strip():
+        return key.strip()
     return frappe.conf.get("groq_api_key")
     
