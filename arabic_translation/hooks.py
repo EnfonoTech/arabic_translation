@@ -44,8 +44,20 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
-    "Item" : "public/js/item.js"
+    "Item": "public/js/item.js",
+    "Address": "public/js/address.js",
+    "Customer": "public/js/customer.js"
+}
+
+# Document Events
+doc_events = {
+    "Address": {
+        "before_save": "arabic_translation.api.address_translation.translate_address_on_save"
+    },
+    "Customer": {
+        "before_save": "arabic_translation.api.customer_translation.translate_customer_on_save"
     }
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}

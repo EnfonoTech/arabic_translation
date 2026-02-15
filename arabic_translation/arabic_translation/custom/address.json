@@ -1,0 +1,60 @@
+{
+  "custom_fields": [
+    {
+      "dt": "Address",
+      "fieldname": "custom_address_line1_arabic",
+      "fieldtype": "Data",
+      "insert_after": "address_line1",
+      "label": "Address Line 1 (Arabic)",
+      "length": 240,
+      "translatable": 1
+    },
+    {
+      "dt": "Address",
+      "fieldname": "custom_area",
+      "fieldtype": "Data",
+      "insert_after": "address_line2",
+      "label": "Area",
+      "length": 140
+    },
+    {
+      "dt": "Address",
+      "fieldname": "custom_area_arabic",
+      "fieldtype": "Data",
+      "insert_after": "custom_area",
+      "label": "Area (Arabic)",
+      "length": 140,
+      "translatable": 1
+    },
+    {
+      "dt": "Address",
+      "fieldname": "custom_city_arabic",
+      "fieldtype": "Data",
+      "insert_after": "city",
+      "label": "City (Arabic)",
+      "length": 140,
+      "translatable": 1
+    },
+    {
+      "dt": "Address",
+      "fieldname": "custom_country_arabic",
+      "fieldtype": "Data",
+      "insert_after": "country",
+      "label": "Country (Arabic)",
+      "length": 140,
+      "translatable": 1
+    },
+    {
+      "dt": "Address",
+      "fieldname": "custom_translate",
+      "fieldtype": "Button",
+      "insert_after": "custom_country_arabic",
+      "label": "Translate to Arabic"
+    }
+  ],
+  "custom_perms": [],
+  "doctype": "Address",
+  "links": [],
+  "property_setters": [],
+  "sync_on_migrate": 1
+}
