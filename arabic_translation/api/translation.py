@@ -1,5 +1,11 @@
+import requests
+
 import frappe
-from frappe.integrations.utils import make_post_request
+
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
+DEFAULT_FALLBACKS = ("qwen/qwen3.8-27b", "openai/gpt-oss-20b")
+TIMEOUT = 12
 
 # Context: "customer_name" = phonetic name, "address" = place/location, None = default
 def _get_prompt_and_system(text, context):
@@ -60,33 +66,96 @@ def translate_to_arabic(text, context=None):
         frappe.throw(f"Translation failed: {str(e)}")
 
 
-def translate_with_groq_natural(text, target_lang, source_lang, context=None):
-    api_key = get_groq_api_key()
-    if not api_key:
-        raise Exception("Groq API key not configured")
+def get_model_chain():
+    """The model to use, then the ones to fall back to.
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    Groq retires models without notice: the previous hard-coded
+    `meta-llama/llama-4-scout-17b-16e-instruct` started answering 404 `model_not_found` and every
+    Customer and Address save logged a failure until somebody read the traceback. The chain lives
+    in settings so the next retirement is a field edit, and it is walked automatically so in most
+    cases nobody has to notice at all.
+    """
+    model, fallbacks = None, None
+    try:
+        settings = frappe.get_single("Arabic Translation Key")
+        model = (settings.get("model") or "").strip()
+        fallbacks = settings.get("fallback_models") or ""
+    except Exception:
+        pass
 
-    prompt, system = _get_prompt_and_system(text, context)
+    chain = [model or DEFAULT_MODEL]
+    for line in (fallbacks or "\n".join(DEFAULT_FALLBACKS)).splitlines():
+        line = line.strip()
+        if line and line not in chain:
+            chain.append(line)
+    return chain
 
+
+def _clean(text):
+    """Return only the Arabic. Models like to wrap the answer in quotes, and gpt-oss pads digits
+    inside an address with narrow no-break spaces that read as boxes in a PDF."""
+    text = (text or "").strip().strip('"').strip("\u201c\u201d").strip()
+    return text.replace("\u202f", " ").replace("\u2009", " ").strip()
+
+
+def _ask(model, system, prompt, headers):
     payload = {
-        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "model": model,
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.3,
         "max_tokens": 1024,
-        "top_p": 0.9
+        "top_p": 0.9,
     }
+    # a reasoning model spends max_tokens thinking and can return an EMPTY content field --
+    # measured on gpt-oss-20b, which answered "" for a customer name it clearly understood
+    if "gpt-oss" in model:
+        payload["reasoning_effort"] = "low"
 
-    response = make_post_request(url, headers=headers, json=payload)
-    translated_text = response["choices"][0]["message"]["content"].strip()
-    return {"translated_text": translated_text}
+    response = requests.post(GROQ_URL, headers=headers, json=payload, timeout=TIMEOUT)
+    if not response.ok:
+        raise Exception(f"{response.status_code} from Groq for model {model}: "
+                        f"{response.text[:200]}")
+    return _clean(response.json()["choices"][0]["message"].get("content"))
+
+
+def translate_with_groq_natural(text, target_lang, source_lang, context=None):
+    api_key = get_groq_api_key()
+    if not api_key:
+        raise Exception("Groq API key not configured")
+
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    prompt, system = _get_prompt_and_system(text, context)
+
+    # An Address save translates up to four fields one after another, in before_save. Without
+    # this memo a retired model is re-tried on every field of every save -- four dead calls per
+    # address, and the user waits for all of them.
+    dead = getattr(frappe.local, "arabic_translation_dead_models", None)
+    if dead is None:
+        dead = set()
+        frappe.local.arabic_translation_dead_models = dead
+
+    last_error = None
+    for model in get_model_chain():
+        if model in dead:
+            continue
+        try:
+            translated = _ask(model, system, prompt, headers)
+        except Exception as e:
+            last_error = e
+            # 404 means retired, 401/403 means the key cannot use it: no point asking again this
+            # request. A timeout or a 429 might pass next time, so those are not remembered.
+            if any(code in str(e) for code in ("404", "401", "403")):
+                dead.add(model)
+            continue
+        if translated:
+            return {"translated_text": translated}
+        # an empty answer is a failure of this model, not of the text -- try the next one
+        last_error = Exception(f"{model} returned an empty translation")
+
+    raise Exception(str(last_error) if last_error else "No Groq model produced a translation")
 
 
 def get_groq_api_key():

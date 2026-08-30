@@ -6,7 +6,10 @@
  "engine": "InnoDB",
  "field_order": [
   "api_key_section",
-  "groq_api_key"
+  "groq_api_key",
+  "model_section",
+  "model",
+  "fallback_models"
  ],
  "fields": [
   {
@@ -18,12 +21,31 @@
    "fieldname": "groq_api_key",
    "fieldtype": "Password",
    "label": "Groq API Key"
+  },
+  {
+   "fieldname": "model_section",
+   "fieldtype": "Section Break",
+   "label": "Model"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model",
+   "default": "openai/gpt-oss-120b",
+   "description": "Groq model id. Groq retires models without notice \u2014 when translation starts failing with a 404, check https://console.groq.com/docs/models and set the current id here. No code change needed."
+  },
+  {
+   "fieldname": "fallback_models",
+   "fieldtype": "Small Text",
+   "label": "Fallback Models",
+   "default": "qwen/qwen3.8-27b\nopenai/gpt-oss-20b",
+   "description": "One model id per line, tried in order when the model above is retired, rate limited, or returns nothing."
   }
  ],
  "icon": "fa fa-key",
  "issingle": 1,
  "links": [],
- "modified": "2026-02-15 18:58:51.690268",
+ "modified": "2026-08-30 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Arabic Translation",
  "name": "Arabic Translation Key",
