@@ -2,7 +2,7 @@
 # License: MIT
 
 import frappe
-from arabic_translation.api.translation import translate_to_arabic
+from arabic_translation.api.translation import auto_translate_disabled, translate_to_arabic
 
 ADDRESS_FIELD_MAP = [
 	("address_line1", "custom_address_line1_arabic"),
@@ -14,6 +14,8 @@ ADDRESS_FIELD_MAP = [
 
 def translate_address_on_save(doc, method=None):
 	"""Translate address fields to Arabic on save when Arabic field is empty."""
+	if auto_translate_disabled():
+		return
 	for source_field, target_field in ADDRESS_FIELD_MAP:
 		source_value = doc.get(source_field)
 		target_value = doc.get(target_field)

@@ -2,11 +2,13 @@
 # License: MIT
 
 import frappe
-from arabic_translation.api.translation import translate_to_arabic
+from arabic_translation.api.translation import auto_translate_disabled, translate_to_arabic
 
 
 def translate_customer_on_save(doc, method=None):
 	"""Translate customer_name to Arabic on save when Arabic field is empty."""
+	if auto_translate_disabled():
+		return
 	source_value = doc.get("customer_name")
 	target_value = doc.get("custom_customer_name_arabic")
 	if not source_value or (target_value and target_value.strip()):

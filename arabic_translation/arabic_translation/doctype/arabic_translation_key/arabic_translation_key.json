@@ -9,7 +9,9 @@
   "groq_api_key",
   "model_section",
   "model",
-  "fallback_models"
+  "fallback_models",
+  "behaviour_section",
+  "disable_auto_translate"
  ],
  "fields": [
   {
@@ -28,24 +30,36 @@
    "label": "Model"
   },
   {
+   "default": "openai/gpt-oss-120b",
+   "description": "Groq model id. Groq retires models without notice — when translation starts failing with a 404, check https://console.groq.com/docs/models and set the current id here. No code change needed.",
    "fieldname": "model",
    "fieldtype": "Data",
-   "label": "Model",
-   "default": "openai/gpt-oss-120b",
-   "description": "Groq model id. Groq retires models without notice \u2014 when translation starts failing with a 404, check https://console.groq.com/docs/models and set the current id here. No code change needed."
+   "label": "Model"
   },
   {
+   "default": "qwen/qwen3.8-27b\nopenai/gpt-oss-20b",
+   "description": "One model id per line, tried in order when the model above is retired, rate limited, or returns nothing.",
    "fieldname": "fallback_models",
    "fieldtype": "Small Text",
-   "label": "Fallback Models",
-   "default": "qwen/qwen3.8-27b\nopenai/gpt-oss-20b",
-   "description": "One model id per line, tried in order when the model above is retired, rate limited, or returns nothing."
+   "label": "Fallback Models"
+  },
+  {
+   "fieldname": "behaviour_section",
+   "fieldtype": "Section Break",
+   "label": "Automatic Translation"
+  },
+  {
+   "default": "0",
+   "description": "When ticked, saving a Customer or an Address leaves a blank Arabic field blank. The Translate buttons still work. Sites that send the Arabic name to ZATCA may prefer typed Arabic over machine output.",
+   "fieldname": "disable_auto_translate",
+   "fieldtype": "Check",
+   "label": "Do not translate automatically on save"
   }
  ],
  "icon": "fa fa-key",
  "issingle": 1,
  "links": [],
- "modified": "2026-08-30 18:00:00.000000",
+ "modified": "2026-10-10 12:00:00",
  "modified_by": "Administrator",
  "module": "Arabic Translation",
  "name": "Arabic Translation Key",

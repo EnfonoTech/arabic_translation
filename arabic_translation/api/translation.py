@@ -184,3 +184,17 @@ def get_groq_api_key():
         return key.strip()
     return frappe.conf.get("groq_api_key")
     
+
+
+def auto_translate_disabled() -> bool:
+	"""The site-level off switch for the on-save handlers.
+
+	Guarded on the field existing: the handlers fire on every Customer and Address
+	save, including during the migrate that first adds this column.
+	"""
+	try:
+		if not frappe.get_meta("Arabic Translation Key").has_field("disable_auto_translate"):
+			return False
+		return bool(frappe.db.get_single_value("Arabic Translation Key", "disable_auto_translate"))
+	except Exception:
+		return False
